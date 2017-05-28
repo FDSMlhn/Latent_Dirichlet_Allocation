@@ -27,7 +27,7 @@ def path2corpus(path):
 
 	#delete other stopwords as well! numbers, individual characters, and characters appears less than x document.
 	abandon_index_1 = np.where(dtm.sum(axis = 0)<=word_lower_bound)[0]
-	abandon_index_2 = np.where([re.search(r'(^[a-zA-Z]$)|([0-9])',v) == None for i in vocab])[0]
+	abandon_index_2 = np.where([re.search(r'(^[a-zA-Z]$)|([0-9])',v) == None for v in vocab])[0]
 	abandon_index = np.union1d(abandon_index_1,abandon_index_2)
 
 	dtm_n= np.delete(dtm, abandon_index,axis=1)

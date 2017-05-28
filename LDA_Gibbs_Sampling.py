@@ -24,20 +24,20 @@ class LDA(object):
 	"""
 	def __init__(self, num_topic,alpha=None,beta=0.1,num_iter=2000,random_seed=1):
 		#assure no meaningless values
-		assert alpha>0 
-		assert beta >0
 		self.num_topic = num_topic
 		self.num_iter = num_iter
 		if alpha is None:
 			self.alpha = 50/num_topic
 		else:
 			self.alpha = alpha
+
 		self.beta = beta 
 		self.random_seed = random_seed
-
+		
+		assert self.alpha>0
+		assert beta >0
 
 	def fit(self, textfiles_path):
-
 		self.corpus, self.title, self.vocab= corpus, title, vocab = util.path2corpus(textfiles_path) 
 		np.random.seed(self.random_seed)
 		self._initialise(corpus)
