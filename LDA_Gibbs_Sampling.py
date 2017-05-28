@@ -70,10 +70,9 @@ class LDA(object):
 		self._n_z = np.zeros((n_t),dtype = np.intc)
 		self._n_dz = np.zeros((D,n_t),dtype=np.intc)
 		self._n_d = np.zeros((D),dtype= np.intc)
-       # initialize the multinomial parameters theta and phi
-       self.theta = np.zeros((D, n_t),dtype=np.intc)
-       self.phi = np.zeros((n_t, V),dtype=np.intc)    
-       
+		# initialize the multinomial parameters theta and phi
+		self.theta = np.zeros((D, n_t),dtype=np.intc)
+		self.phi = np.zeros((n_t, V),dtype=np.intc)    
 		self._n = n = int(corpus.sum())
 		self.d_list, self.w_list = util.array2list(corpus)
 		self.z_list = []
@@ -93,7 +92,7 @@ class LDA(object):
 		
 		#assert self._n_zw.sum() == self._n
 
-    def _gibbs_sampling(self):
+	def _gibbs_sampling(self):
 		"""
 		Only iterate once
 		"""
@@ -114,12 +113,12 @@ class LDA(object):
             
 			# K dimension
           # multi_prop = P(z|w) = P(w,z)/p(w)
-          multi_prop = (self._n_zw[:,w]+beta).astype(float)/(self._n_z + V*beta) * \
-		   			(self._n_dz[d]+ alpha).astype(float)/(self._n_d[d] + n_t*alpha)
-          assert multi_prop.shape[0] == n_t
-          new_z =  np.random.multinomial(1, multi_prop/sum(multi_prop)).argmax()
-          self.z_list[i] = new_z
-          self._n_zw[new_z][w] += 1
+			multi_prop = (self._n_zw[:,w]+beta).astype(float)/(self._n_z + V*beta) * \
+					(self._n_dz[d]+ alpha).astype(float)/(self._n_d[d] + n_t*alpha)
+			assert multi_prop.shape[0] == n_t
+			new_z =  np.random.multinomial(1, multi_prop/sum(multi_prop)).argmax()
+			self.z_list[i] = new_z
+			self._n_zw[new_z][w] += 1
 			self._n_z[new_z] += 1
 			self._n_dz[d][new_z] += 1 
 			self._n_d[d] += 1
