@@ -20,3 +20,6 @@ for i,t_v in enumerate(model.results["topic-vocabulary"]):
     top_topic_words_index = t_v.argsort()[:-top_n_word:-1]
     top_topic_words = np.array(vocab)[top_topic_words_index]
     print('Topic {}: {}'.format(i, ' '.join(top_topic_words))) 
+
+for i in range(100):
+    print("{} (top topic: {})".format(title[i], model.results["document-topic"][i].argmax()))

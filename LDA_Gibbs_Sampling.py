@@ -1,6 +1,6 @@
 import numpy as np
 import util
-
+import scipy.special as ss
 
 
 class LDA(object):
@@ -8,14 +8,17 @@ class LDA(object):
 	The implement of LDA via collapsed gibbs sampling.
 
 	"""
-	def __init__(self, num_topic,alpha=0.1,beta=0.01,num_iter=2000,random_seed=1):
+	def __init__(self, num_topic,alpha=None,beta=0.1,num_iter=2000,random_seed=1):
 		#assure no meaningless values
 		assert alpha>0 
 		assert beta >0
 
 		self.num_topic = num_topic
 		self.num_iter = num_iter
-		self.alpha = alpha
+		if alpha is None:
+			self.alpha = 50/num_topic
+		else:
+			self.alpha = alpha
 		self.beta = beta 
 		self.random_seed = random_seed
 
@@ -29,7 +32,7 @@ class LDA(object):
 		#gibbs sampling
 		for it in range(self.num_iter):
 			self._gibbs_sampling()
-
+			self._log_likelihood(it)
 		self._output_prep()
 
 		del self.d_list
@@ -57,6 +60,7 @@ class LDA(object):
 		self._n = n = int(corpus.sum())
 		self.d_list, self.w_list = util.array2list(corpus)
 		self.z_list = []
+		self.log_likelihood = np.zeros(self.num_iter, dtype=float)
 
 		for i in range(n):
 			d= self.d_list[i] 
@@ -71,8 +75,6 @@ class LDA(object):
 			self._n_d[d] += 1
 		
 		#assert self._n_zw.sum() == self._n
-
-		 
 
 	def _gibbs_sampling(self):
 		"""
@@ -107,6 +109,16 @@ class LDA(object):
 			self._n_z[new_z] += 1
 			self._n_dz[d][new_z] += 1 
 			self._n_d[d] += 1
+
+	def _log_likelihood(self,it):
+		V = self.V
+		beta = self.beta
+
+		part1 = self.num_topic *(ss.gammaln(V*beta) - V * ss.gammaln(beta))
+		part2 = (ss.gammaln(self._n_zw + beta).sum(axis=1) - ss.gammaln(self._n_z + V*beta)).sum(0)
+
+		self.log_likelihood[it] = part1+part2
+
 
 	def _output_prep(self):
 		"""
