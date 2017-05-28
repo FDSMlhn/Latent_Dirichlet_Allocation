@@ -23,3 +23,10 @@ for i,t_v in enumerate(model.results["topic-vocabulary"]):
 
 for i in range(100):
     print("{} (top topic: {})".format(title[i], model.results["document-topic"][i].argmax()))
+
+count_list = np.zeros(25,dtype=np.intc)
+for i,t in enumerate(title):
+    index = model.results["document-topic"][i].argmax()
+    count_list[index] += 1
+print(list(range(25)))
+print(count_list)    
