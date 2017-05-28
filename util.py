@@ -19,6 +19,7 @@ def array2list(corpus):
 
 
 def path2corpus(path):
+	print('sss')
 	txt_list = os.listdir(path)[1:]
 	filenames = [os.path.join(path,txt) for txt in txt_list]
 	vectorizer = CountVectorizer(input = 'filename',lowercase = True,stop_words = 'english')
