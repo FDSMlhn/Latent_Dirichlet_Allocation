@@ -29,7 +29,7 @@ def path2corpus(path):
 	abandon_index_1 = np.where(dtm.sum(axis = 0)<=word_lower_bound)[0]
 	abandon_index_2 = np.where([re.search(r'(^[a-zA-Z]$)|([0-9])',v) == None for i in vocab])[0]
 	abandon_index = np.union1d(abandon_index_1,abandon_index_2)
-
+	print(abandon_index)
 	dtm_n= np.delete(dtm, abandon_index,axis=1)
 	vocab_n = np.delete(np.array(vectorizer.get_feature_names()), abandon_index,axis=1)
 	title  = np.array([re.sub(".txt$","", txt) for txt in txt_list])
