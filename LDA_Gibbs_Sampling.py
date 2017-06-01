@@ -142,9 +142,10 @@ class LDA(object):
 		self.log_likelihood[it] = part1+part2
 
 
-	def predict(self,corpus_test = None,vocab = None):
-		if not corpus_test or not vocab:
-			raise ValueError("None corpus_test or vocab received!!")
+	def predict(self,corpus_test = None):
+		if not corpus_test:
+			raise ValueError("None corpus_test received!!")
+		
 		n = 0
 		total_ln_pr = 0
 		for M_dtm in corpus_test:
@@ -155,8 +156,7 @@ class LDA(object):
 			ln_pr = self._perplexity(M_dtm)
 			n += n_m
 			total_ln_pr += ln_pr
-		perlexity = np.exp(-total_ln_pr/n)
-		return perlexity
+		self.results["perlexity"] = np.exp(-total_ln_pr/n)
 
 
 	def _perplexity(self,m_dtm):
@@ -164,7 +164,7 @@ class LDA(object):
 		temp = self.alpha + self._n_dz
 		theta = temp/temp.sum()
 
-		temp ＝ np.dot(self.results["topic-vocabulary-phi"].T, theta)
+		temp = np.dot(self.results["topic-vocabulary-phi"].T, theta)
 		ln_pr =(m_dtm * np.log(temp)).sum()
 		return ln_pr
 
