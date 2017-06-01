@@ -4,7 +4,8 @@ import numpy as np
 import util
 import os
 import re
-TRAIN_PROP = 0.75 
+
+
 
 #filenames for data
 
@@ -14,7 +15,7 @@ TRAIN_PROP = 0.75
 class TOPIC_MODEL(object):
 	def __init__(self):
 		return
-	def fit(self,allcontent,num_topic=10,**kwarg):
+	def fit(self,allcontent,num_topic=10,train_prop = 0.75,**kwarg):
 		try:
 			np.random.seed(kwar['random_seed'])
 		except:
@@ -43,6 +44,8 @@ class TOPIC_MODEL(object):
 		model.results['test_index'] = test_index
 		model.results['train_index'] = train_index
 		model.results['vocabulary'] = vocab_train
+
+		return model
 
 if __name__ == "__main__ ":
 	path="/Users/Dreamland/Desktop/Fudan University/2017第二学期/AI/Latent_Dirichlet_Allocation/datasets"
