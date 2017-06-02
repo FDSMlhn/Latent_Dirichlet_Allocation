@@ -21,7 +21,8 @@ class TOPIC_MODEL(object):
 		except:
 			print('Next time plz add random_seed here!')
 
-		index = np.random.binomial(1, p = TRAIN_PROP, size= doc_size)
+		doc_size = len(allcontent)
+		index = np.random.binomial(1, p = train_prop, size= doc_size)
 		train_index, test_index = index.astype('bool'), (1 - index).astype('bool')
 
 		train_content = list(compress(allcontent,train_index))
@@ -51,8 +52,8 @@ if __name__ == "__main__ ":
 	path="/Users/Dreamland/Desktop/Fudan University/2017第二学期/AI/Latent_Dirichlet_Allocation/datasets"
 	txt_list = os.listdir(path)[1:]
 	doc_size = len(txt_list)
-	filenames = [os.path.join(path,txt) for txt in txt_list_train]
-	title_train = np.array([re.sub(".txt$","", txt) for txt in txt_list_train])
+	filenames = [os.path.join(path,txt) for txt in txt_list]
+	title = np.array([re.sub(".txt$","", txt) for txt in txt_list])
 	content = []
 	for i in filenames:
 		with open(i,'r') as f:

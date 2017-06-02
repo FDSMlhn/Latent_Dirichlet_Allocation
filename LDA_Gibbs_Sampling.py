@@ -56,8 +56,8 @@ class LDA(object):
 		del self.d_list
 		del self.w_list
 		del self.z_list
-		#del self._n_zw
-		#del self._n_z
+		del self._n_zw
+		del self._n_z
 		del self._n_dz
 		del self._n_d
 
@@ -143,30 +143,49 @@ class LDA(object):
 
 
 	def predict(self,corpus_test = None):
-		if not corpus_test:
+		if corpus_test is None:
 			raise ValueError("None corpus_test received!!")
 		
 		n = 0
 		total_ln_pr = 0
+
+		pred_pdf = np.zeros((1,corpus_test.shape[1]),dtype=float)
 		for M_dtm in corpus_test:
 			n_m = M_dtm.sum()
-			self._initialise(M_dtm)
+			M_dtm_2 = M_dtm[np.newaxis,:]
+
+			assert M_dtm_2.shape == (1,corpus_test.shape[1])
+
+			self._initialise(M_dtm_2)
 			for i in range(self.num_iter):
 				self._gibbs_sampling(predict= True)
-			ln_pr = self._perplexity(M_dtm)
+			ln_pr, theta = self._perplexity(M_dtm)
 			n += n_m
 			total_ln_pr += ln_pr
-		self.results["perlexity"] = np.exp(-total_ln_pr/n)
 
+			#the distribution of new word!
+			#theta has been computed above 1D array
+			#phi
+			train_n_zw =self.results["topic-vocabulary"]
+			train_n_z = self.results["topic-vocabulary-sum"]
+			beta = self.beta
+			V= self.V
+			phi = (self._n_zw + train_n_zw + beta).astype(float)/(self._n_z + train_n_z+ V*beta)[:,np.newaxis]
+			pdf = np.dot(theta, phi) # 1* V dimension 2D array
+			pred_pdf = np.append(pred_pdf, pdf,axis=0)
+
+		pred_pdf = np.delete(pred_pdf,0,axis=0)
+		self.results["perlexity"] = np.exp(-total_ln_pr/n)
+		self.results["predict_term_distribution"] = pred_pdf
 
 	def _perplexity(self,m_dtm):
 		#theta
 		temp = self.alpha + self._n_dz
-		theta = temp/temp.sum()
+		theta = temp/temp.sum(axis=1)
 
-		temp = np.dot(self.results["topic-vocabulary-phi"].T, theta)
+		temp = np.dot(self.results["topic-vocabulary-phi"].T, theta[0,:])
 		ln_pr =(m_dtm * np.log(temp)).sum()
-		return ln_pr
+		return ln_pr,theta
 
 
 	def _output_prep(self):
