@@ -15,7 +15,7 @@ import re
 class TOPIC_MODEL(object):
 	def __init__(self):
 		return
-	def fit(self,allcontent,num_topic=10,train_prop = 0.75,**kwarg):
+	def fit(self,allcontent,num_topic=10,train_prop = 0.9,**kwarg):
 		try:
 			np.random.seed(kwar['random_seed'])
 		except:

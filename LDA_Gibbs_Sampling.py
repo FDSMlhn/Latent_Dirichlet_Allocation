@@ -23,7 +23,7 @@ class LDA(object):
         n_z_[num_topic]: Array of topic assignment counts in final iteration.
 
 	"""
-	def __init__(self, num_topic,alpha=None,beta=0.1,num_iter=2000,random_seed=1):
+	def __init__(self, num_topic,alpha=None,beta=0.1,num_iter=800,random_seed=1):
 		#assure no meaningless values
 		self.num_topic = num_topic
 		self.num_iter = num_iter

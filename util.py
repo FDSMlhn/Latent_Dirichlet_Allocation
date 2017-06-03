@@ -9,7 +9,7 @@ import re
 
 stpw1= stopwords.words('english')
 stpw2= get_stop_words('en')
-stpw3= ['th','says','say','said']
+stpw3= ['th','says','say','said','br']
 STPW = set(stpw1+stpw2+stpw3)
 
 word_lower_bound = 1
