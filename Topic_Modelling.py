@@ -17,7 +17,7 @@ class TOPIC_MODEL(object):
 		return
 	def fit(self,allcontent,num_topic=10,train_prop = 0.9,**kwarg):
 		try:
-			np.random.seed(kwar['random_seed'])
+			np.random.seed(kwarg['random_seed'])
 		except:
 			print('Next time plz add random_seed here!')
 
