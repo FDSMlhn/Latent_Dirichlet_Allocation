@@ -23,7 +23,7 @@ class LDA(object):
         n_z_[num_topic]: Array of topic assignment counts in final iteration.
 
 	"""
-	def __init__(self, num_topic,alpha=None,beta=0.1,num_iter=800,random_seed=1):
+	def __init__(self, num_topic,alpha=None,beta=0.1,num_iter=500,random_seed=1):
 		#assure no meaningless values
 		self.num_topic = num_topic
 		self.num_iter = num_iter
@@ -175,7 +175,7 @@ class LDA(object):
 			pred_pdf = np.append(pred_pdf, pdf,axis=0)
 
 		pred_pdf = np.delete(pred_pdf,0,axis=0)
-		self.results["perlexity"] = np.exp(-total_ln_pr/n)
+		self.results["perplexity"] = np.exp(-total_ln_pr/n)
 		self.results["predict_term_distribution"] = pred_pdf
 
 	def _perplexity(self,m_dtm):
@@ -202,3 +202,4 @@ class LDA(object):
 		self.results["document-topic-theta"] = (self._n_dz+ alpha).astype(float)/(self._n_d +  n_t*alpha)[:,np.newaxis]
 		self.results["topic-vocabulary"] = self._n_zw
 		self.results["topic-vocabulary-sum"] = self._n_z
+		self.results["log_likelihood"] = self.log_likelihood
