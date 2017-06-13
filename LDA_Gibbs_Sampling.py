@@ -1,6 +1,7 @@
 import numpy as np
 import util
 import scipy.special as ss
+from scipy.stats import hmean as hm
 
 
 class LDA(object):
@@ -22,7 +23,7 @@ class LDA(object):
         n_z_[num_topic]: Array of topic assignment counts in final iteration.
 
 	"""
-	def __init__(self, num_topic,alpha=None,beta=0.1,num_iter=2000,random_seed=1):
+	def __init__(self, num_topic,alpha=None,beta=0.1,num_iter=500,random_seed=1):
 		#assure no meaningless values
 		self.num_topic = num_topic
 		self.num_iter = num_iter
@@ -33,12 +34,14 @@ class LDA(object):
 
 		self.beta = beta 
 		self.random_seed = random_seed
-		
+
 		assert self.alpha>0
 		assert beta >0
 
-	def fit(self, textfiles_path):
-		self.corpus, self.title, self.vocab= corpus, title, vocab = util.path2corpus(textfiles_path) 
+	def fit(self, corpus):
+		'''
+		the corpus is already array(Document-Term Matrix in topic modelling)
+		'''
 		np.random.seed(self.random_seed)
 		self._initialise(corpus)
 
@@ -47,6 +50,8 @@ class LDA(object):
 			self._gibbs_sampling()
 			self._log_likelihood(it)
 		self._output_prep()
+
+
 
 		del self.d_list
 		del self.w_list
@@ -61,8 +66,8 @@ class LDA(object):
 	def _initialise(self, corpus):
 		#Four arrays need to be initialed
 		#Topic-Vocabulary, Topic, Document-Topic, Document
-       #change a little bit -- yr
-       
+		#change a little bit -- yr
+
 		self.D, self.V = D, V = corpus.shape
 		n_t = self.num_topic
         
@@ -70,9 +75,7 @@ class LDA(object):
 		self._n_z = np.zeros((n_t),dtype = np.intc)
 		self._n_dz = np.zeros((D,n_t),dtype=np.intc)
 		self._n_d = np.zeros((D),dtype= np.intc)
-		# initialize the multinomial parameters theta and phi
-		self.theta = np.zeros((D, n_t),dtype=np.intc)
-		self.phi = np.zeros((n_t, V),dtype=np.intc)    
+
 		self._n = n = int(corpus.sum())
 		self.d_list, self.w_list = util.array2list(corpus)
 		self.z_list = []
@@ -92,7 +95,7 @@ class LDA(object):
 		
 		#assert self._n_zw.sum() == self._n
 
-	def _gibbs_sampling(self):
+	def _gibbs_sampling(self,predict= False):
 		"""
 		Only iterate once
 		"""
@@ -110,10 +113,15 @@ class LDA(object):
 			self._n_z[z] -= 1
 			self._n_dz[d][z] -= 1 
 			self._n_d[d] -= 1
-            
 			# K dimension
-          # multi_prop = P(z|w) = P(w,z)/p(w)
-			multi_prop = (self._n_zw[:,w]+beta).astype(float)/(self._n_z + V*beta) * \
+			# multi_prop = P(z|w) = P(w,z)/p(w)
+			if not predict:
+				multi_prop = (self._n_zw[:,w]+beta).astype(float)/(self._n_z + V*beta) * \
+					(self._n_dz[d]+ alpha).astype(float)/(self._n_d[d] + n_t*alpha)
+			else:
+				train_n_z = self.results["topic-vocabulary-sum"]
+				train_n_zw = self.results["topic-vocabulary"]
+				multi_prop = (self._n_zw[:,w]+beta+train_n_zw[:,w]).astype(float)/(self._n_z + V*beta+train_n_z) * \
 					(self._n_dz[d]+ alpha).astype(float)/(self._n_d[d] + n_t*alpha)
 			assert multi_prop.shape[0] == n_t
 			new_z =  np.random.multinomial(1, multi_prop/sum(multi_prop)).argmax()
@@ -123,6 +131,7 @@ class LDA(object):
 			self._n_dz[d][new_z] += 1 
 			self._n_d[d] += 1
 
+
 	def _log_likelihood(self,it):
 		V = self.V
 		beta = self.beta
@@ -131,6 +140,52 @@ class LDA(object):
 		part2 = (ss.gammaln(self._n_zw + beta).sum(axis=1) - ss.gammaln(self._n_z + V*beta)).sum(0)
 
 		self.log_likelihood[it] = part1+part2
+
+
+	def predict(self,corpus_test = None):
+		if corpus_test is None:
+			raise ValueError("None corpus_test received!!")
+		
+		n = 0
+		total_ln_pr = 0
+
+		pred_pdf = np.zeros((1,corpus_test.shape[1]),dtype=float)
+		for M_dtm in corpus_test:
+			n_m = M_dtm.sum()
+			M_dtm_2 = M_dtm[np.newaxis,:]
+
+			assert M_dtm_2.shape == (1,corpus_test.shape[1])
+
+			self._initialise(M_dtm_2)
+			for i in range(self.num_iter):
+				self._gibbs_sampling(predict= True)
+			ln_pr, theta = self._perplexity(M_dtm)
+			n += n_m
+			total_ln_pr += ln_pr
+
+			#the distribution of new word!
+			#theta has been computed above 1D array
+			#phi
+			train_n_zw =self.results["topic-vocabulary"]
+			train_n_z = self.results["topic-vocabulary-sum"]
+			beta = self.beta
+			V= self.V
+			phi = (self._n_zw + train_n_zw + beta).astype(float)/(self._n_z + train_n_z+ V*beta)[:,np.newaxis]
+			pdf = np.dot(theta, phi) # 1* V dimension 2D array
+			pred_pdf = np.append(pred_pdf, pdf,axis=0)
+
+		pred_pdf = np.delete(pred_pdf,0,axis=0)
+		self.results["perplexity"] = np.exp(-total_ln_pr/n)
+		self.results["predict_term_distribution"] = pred_pdf
+
+	def _perplexity(self,m_dtm):
+		#theta
+		temp = self.alpha + self._n_dz
+		theta = temp/temp.sum(axis=1)
+
+		temp = np.dot(self.results["topic-vocabulary-phi"].T, theta[0,:])
+		ln_pr =(m_dtm * np.log(temp)).sum()
+		return ln_pr,theta
 
 
 	def _output_prep(self):
@@ -143,5 +198,8 @@ class LDA(object):
 		n_t = self.num_topic
 		V = self.V
 		self.results = {}
-		self.results["topic-vocabulary"] = (self._n_zw + beta).astype(float)/(self._n_z + V*beta)[:,np.newaxis]
-		self.results["document-topic"] = (self._n_dz+ alpha).astype(float)/(self._n_d +  n_t*alpha)[:,np.newaxis]
+		self.results["topic-vocabulary-phi"] = (self._n_zw + beta).astype(float)/(self._n_z + V*beta)[:,np.newaxis]
+		self.results["document-topic-theta"] = (self._n_dz+ alpha).astype(float)/(self._n_d +  n_t*alpha)[:,np.newaxis]
+		self.results["topic-vocabulary"] = self._n_zw
+		self.results["topic-vocabulary-sum"] = self._n_z
+		self.results["log_likelihood"] = self.log_likelihood
