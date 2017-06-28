@@ -62,7 +62,6 @@ def array2list(corpus):
 # 		return dtm_n,title,vocab_n
 
 def trans_special_token(dtm,vocab):
-
 	spec_list = []
 	for col in range(dtm.shape[1]):
 		if len(np.nonzero(dtm[:,col])[0]) <=word_lower_bound:
