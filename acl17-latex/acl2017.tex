@@ -15,8 +15,10 @@
 \usepackage[hyperref]{acl2017}
 \usepackage{times}
 \usepackage{latexsym}
-
+\usepackage{graphicx}
+\graphicspath{ {pictures/} }
 \usepackage{url}
+\usepackage{amsmath}
 
 \aclfinalcopy % Uncomment this line for the final submission
 %\def\aclpaperid{***} %  Enter the acl Paper ID here
@@ -32,88 +34,72 @@
 \title{Instructions for ACL-2017 Proceedings}
 
 \author{Haonan Li \\
-  Affiliation / Address line 1 \\
-  Affiliation / Address line 2 \\
-  Affiliation / Address line 3 \\
   {\tt email@domain} \\\And
-  Second Author \\
-  Affiliation / Address line 1 \\
-  Affiliation / Address line 2 \\
-  Affiliation / Address line 3 \\
-  {\tt email@domain} \\}
+  Keyong Huang \\
+  {\tt email@domain} \\\And
+    Keyong Huang \\
+  {\tt email@domain} \\\
+ }
 
-\date{}
+\date{6.29.2017}
 
 \begin{document}
+
 \maketitle
 \begin{abstract}
-  This document contains the instructions for preparing a camera-ready
-  manuscript for the proceedings of ACL-2017. The document itself
-  conforms to its own specifications, and is therefore an example of
-  what your manuscript should look like. These instructions should be
-  used for both papers submitted for review and for final versions of
-  accepted papers.  Authors are asked to conform to all the directions
-  reported in this document.
+Latent Dirichlet Allocation(LDA) is a popular algorithm for Topic Modelling, which is widely used in many fields like e-commerce, document summarised, etc. In this project, we're trying to realise the LDA via Gibbs Sampling in python and then conduct empirical analysis on three different tasks - document modelling, document classification and collaborative filtering(CF). And our results show LDA performs well in document modelling and CF, but unsatisfactory in document classification.
 \end{abstract}
 
-\section{Credits}
+\section{Introduction}
 
-This document has been adapted from the instructions for earlier ACL
-and NAACL proceedings, including those for ACL 2017 by Dan Gildea and
-Min-Yen Kan, NAACL-2017 by Margaret Mitchell, ACL-2012 by Maggie Li
-and Michael White, those from ACL-2010 by Jing-Shing Chang and Philipp
-Koehn, those for ACL-2008 by Johanna D. Moore, Simone Teufel, James
-Allan, and Sadaoki Furui, those for ACL-2005 by Hwee Tou Ng and Kemal
-Oflazer, those for ACL-2002 by Eugene Charniak and Dekang Lin, and
-earlier ACL and EACL formats. Those versions were written by several
-people, including John Chen, Henry S. Thompson and Donald
-Walker. Additional elements were taken from the formatting
-instructions of the {\em International Joint Conference on Artificial
-  Intelligence} and the \emph{Conference on Computer Vision and
-  Pattern Recognition}.
+The goal of topic modeling is to discern latent topics of a collection of documents. To specify, the project requires us to find the topic structures of the corpus according to the content based on the statistical relationship between them, which is useful in numerous tasks. LDA is a generative model based on the simple 'bag-of-words' assumption. The variations of LDA also raise a lot of attention in recent years. However, we will limit our passage only to the traditional LDA method and its applicaitions.   
+
+The paper is organised as follows. In Section 2 we will introduce the basic idea of Latent Dirichlet Allocation(LDA) via Gibbs Sampling and how we implement it in Python. In Section 3, we will focus on the task of topic modeling. We will introduce the document classification in Section 4. In Section 5, we will present you with empirical result in collaborative filtering. 
 
 
-
-\section{Data Preprocessing}
-
-As the convention of natural language preprocessing, we remove stopwords 
-like 'we','us' in all documents and stem them afterwards. In order to make 
+%\section{Data Preprocessing}
+%As the convention of natural language preprocessing, we remove stopwords 
+%like 'we','us' in all documents and stem them afterwards. In order to make 
 
 \section{Introduction and Implementation of LDA}
 
-Latent Dirichlet Allocation(LDA) is a hierarchical model for topic modelling. Unlike simple algorithms like PLSI, LDA assume that a single document may comprise of several different topics. The detailed explanation of LDA model can be found in Ng, Blei(2013).
-The implementation of 
+Latent Dirichlet Allocation(LDA) is a hierarchical model for topic modelling. Unlike simple algorithms like PLSI, LDA assume that a single document may comprise of several different topics.The graphical representation is as Figure1.The detailed explanation of LDA model can be found in Ng, Blei(2013).
 
+\begin{figure}[h]
+\includegraphics[scale=0.8]{graphic_rep.png}
+\centering
+\caption{Graphical Representation of LDA}
+\centering
+\end{figure}
 
+The inference of posterior distribution can be considered in different ways. In this article, we will use Gibbs Sampling to implement LDA. The Gibbs Sampling is a popular Monte Carlo sampling method. The essence of this method is to compute the conditional distrition $P(z_i | x, z^{\neg}_i ) $, where $z^{\neg}_i$ indicates all z except $z_i$ for token i. After calculation, we have:
 
+\begin{displaymath}
+P(z_i | x, z^{\neg}_i ) \propto \frac{n^{t}_{k, \neg i} + \beta}{ \sum_{t=1}^{V} n^{t}_{k, \neg i}+ V\beta}
+\frac{n^{k}_{m, \neg i} + \alpha}{ \sum_{k=1}^{V} n^{k}_{m}+ K\alpha}
+\end{displaymath}
 
-Manuscripts must be in two-column format.  Exceptions to the
-two-column format include the title, authors' names and complete
-addresses, which must be centered at the top of the first page, and
-any full-width figures or tables (see the guidelines in
-Subsection~\ref{ssec:first}). {\bf Type single-spaced.}  Start all
-pages directly under the top margin. See the guidelines later
-regarding formatting the first page.  The manuscript should be
-printed single-sided and its length
-should not exceed the maximum page limit described in Section~\ref{sec:length}.
-Pages are numbered for  initial submission. However, {\bf do not number the pages in the camera-ready version}.
+where $n^{t}_{k, \neg i}$ means the number of tokens assigned to topic k excluding token i, $n^{k}_{m, \neg i}$  indicates the number of tokens assign to topic k in document m excluding token i, corresponding to topic-term matrix and document-topic matrix.
 
-By uncommenting {\small\verb|\aclfinalcopy|} at the top of this 
- document, it will compile to produce an example of the camera-ready formatting; by leaving it commented out, the document will be anonymized for initial submission.  When you first create your submission on softconf, please fill in your submitted paper ID where {\small\verb|***|} appears in the {\small\verb|\def\aclpaperid{***}|} definition at the top.
+Meanwhile, the number of iteration of Gibbs Sampling should be carefully assigned to speed up the whole process. In hindsight, 500 is an optimal number for the stationary sampling.
 
-The review process is double-blind, so do not include any author information (names, addresses) when submitting a paper for review.  
-However, you should maintain space for names and addresses so that they will fit in the final (accepted) version.  The ACL 2017 \LaTeX\ style will create a titlebox space of 2.5in for you when {\small\verb|\aclfinalcopy|} is commented out.  
+Afterwards, we need computer two values of interest: the term distribution for each topic and the topic distribution for each document, namely $\theta_m$ and $\phi_k$, where m=
+$1,2, \dots, M$ and k = $1,2,\dots, K$. The result is as following:
 
-\subsection{The Ruler}
-The ACL 2017 style defines a printed ruler which should be presented in the
-version submitted for review.  The ruler is provided in order that
-reviewers may comment on particular lines in the paper without
-circumlocution.  If you are preparing a document without the provided
-style files, please arrange for an equivalent ruler to
-appear on the final output pages.  The presence or absence of the ruler
-should not change the appearance of any other content on the page.  The
-camera ready copy should not contain a ruler. (\LaTeX\ users may uncomment
-the {\small\verb|\aclfinalcopy|} command in the document preamble.)  
+\begin{displaymath}
+\phi_{k,t}= \frac{n^{t}_{k} + \beta}{ \sum_{t=1}^{V} n^{t}_{k}+ V\beta}
+\end{displaymath}
+\begin{displaymath}
+\theta_{m,k} =  \frac{n^{k}_{m} + \alpha}{ \sum_{k=1}^{K} n^{k}_{m}+ K\alpha}
+\end{displaymath}
+
+In terms of the parameter tuning, common criterion is the perplexity of the test datasets. However, due to the goal of the specific task, one may find some changes on the
+metric of perplexity more appropriate. Thus, we will introduce this metric in detail later when we introduce the tasks.
+
+\section{Document Modelling}
+
+In order to figure out the most suitable number of topics according to the content and semanteme based on the statistical features, we need a large set of data to train the data. Furthermore, we ensured the accuracy of the algorithm by comparing with other graphic modeling algorithm.
+
 
 Reviewers: note that the ruler measurements do not align well with
 lines in the paper -- this turns out to be very difficult to do well
@@ -122,18 +108,13 @@ looks ugly. In most cases one would expect that the approximate
 location will be adequate, although you can also use fractional
 references ({\em e.g.}, the first paragraph on this page ends at mark $114.5$).
 
-\subsection{Electronically-available resources}
+\subsection{Data description}
 
-ACL provides this description in \LaTeX2e{} ({\small\tt acl2017.tex}) and PDF
-format ({\small\tt acl2017.pdf}), along with the \LaTeX2e{} style file used to
-format it ({\small\tt acl2017.sty}) and an ACL bibliography style ({\small\tt acl\_natbib.bst})
-and example bibliography ({\small\tt acl2017.bib}).
-These files are all available at
-{\small\tt acl2017.org/index.php?article\_id=9}. We
-strongly recommend the use of these style files, which have been
-appropriately tailored for the ACL 2017 proceedings.
+The dataset we use is Amazon Fine Foods reviews, which consists of 568,454 reviews of fine foods from 256,059 users left up to Oct. 2012. Amazon fine food reviews dataset has the following attributes: ProductId, UserId , ProfileName, HelpfulnessNumerator (number of users who found the review helpful),  HelpfulnessDenominator (number of users who indicated whether they found the review helpful) , Score (rating of the product), Time , Summary(brief summary of the review)  and Text(text of the review).
+In our document classification problem, we use text information, Summary and Text as the corpus to train and test the LDA model. Score, whose rating between one and five, is the categorical variable in the document classification model. By applying LDA model, we can use a dense document-topic matrix derived by LDA model to replace a sparse co-occurrence matrix, thus serving a function of dimensionality reduction.
+However the original dataset is too large thus too time-consuming for us to train the LDA model, so we randomly choose 1500 reviews from 1478 users evaluating 1318 products.
 
-\subsection{Format of Electronic Manuscript}
+\subsection{Choose appropriate number of topics}
 \label{sect:pdf}
 
 For the production of the electronic manuscript you must use Adobe's
@@ -469,49 +450,49 @@ Here we give a simple criterion on your colored figures, if your paper has to be
 %% \url{http://dlmf.nist.gov/LaTeXML/manual/included.bindings}
 % END: remove
 
-\section{Translation of non-English Terms}
+\section{Collaborative Filtering}
 
-It is also advised to supplement non-English characters and terms
-with appropriate transliterations and/or translations
-since not all readers understand all such characters and terms.
-Inline transliteration or translation can be represented in
-the order of: original-form transliteration ``translation''.
+In our task of Collaborative Filtering(CF), we conduct LDA algorithm on the dataset from platform for movie reviewers ? MovieLens, to predict the preference of users and recommend them a new movie based on the their records. The dataset we are using is MoiveLens 20M(2016) and only a subset of it(2000 users in 138000) is included in our experiment due to the lack of computational resources. 
+In our experiment, all users having less than 100 reviews are not included into our dataset in order to partly control the problem of sparsity. We divide this set of users into 1800 training users and 200 testing users. Training users will be further divided for the parameter tuning, which is number of topics in the LDA model. We train the model on a fully observed set of users. For each user in the test dataset, we hold out one movie in their records and use the others to guess the held-out movie. The evaluation metric is the likelihood of the held-out movie. More precisely, we define the predictive-perplexity as following:
 
-\section{Length of Submission}
+\begin{small}
+\begin{displaymath}
+P\textrm{-}P(D_{test}) =  
+ \exp{\left\{-\frac{\sum_{d=1}^M \log p(w_{d,N_d}|\mathbf{w}_{d,1:N_d-1})}{M}\right\}}
+\end{displaymath}
+\end{small}
+\subsection{Model Training}
+
+We split the training dataset into two groups, 80\% for modeling and 20\% for parameter tuning. And then we choose the best number of topics for our model via the predictive perplexity we achieve on the 20\% of training users. Result is as Figure:
+
+\begin{figure}[h]
+\includegraphics[scale=0.8]{cf_para_tune.png}
+\centering
+\end{figure}
+
+
+we can see that the model with 15 topics predict the held-out movie best. Thus, we will use all data in training users to train the final model with 15 topics and check for performance on the testing users.
+
+\subsection{Model Evaluation}
 \label{sec:length}
+Collaborative Filtering evaluation metric varies according to the goal of the tasks like whether you want to recommend the right items or annotate the message in the context. In our case, we will concentrate on finding the right items. One of effective metrics to evaluate recommendation system of this goal is to see the recall rate of this recommendation system versus the number of recommended movies. More precisely, we held out small part of the movies(1/5 in our case), and then we present user with M movies ranked by the probability they may exist in ones? profiles and evaluate based on which of these movies were actually in each users? profiles. The definition of recall rate can be defined as following:
 
-The ACL 2017 main conference accepts submissions of long papers and
-short papers.
- Long papers may consist of up to eight (8) pages of
-content plus unlimited pages for references. Upon acceptance, final
-versions of long papers will be given one additional page -- up to nine (9)
-pages of content plus unlimited pages for references -- so that reviewers' comments
-can be taken into account. Short papers may consist of up to four (4)
-pages of content, plus unlimited pages for references. Upon
-acceptance, short papers will be given five (5) pages in the
-proceedings and unlimited pages for references. 
+\begin{displaymath}
+recall\textrm{-}rate(M)=  \frac{M_{user\ likes} }{M_{held-out}}
+\end{displaymath}
 
-For both long and short papers, all illustrations and tables that are part
-of the main text must be accommodated within these page limits, observing
-the formatting instructions given in the present document. Supplementary
-material in the form of appendices does not count towards the page limit.
+where $M_{user\ likes}$ is the the number of movies user likes and $M_{held-out}$ is the number of movies we held out for this user. The recommendation system recall rate will be the arithmetic average of recall rates or all users.
 
-However, note that supplementary material should be supplementary
-(rather than central) to the paper, and that reviewers may ignore
-supplementary material when reviewing the paper (see Appendix
-\ref{sec:supplemental}). Papers that do not conform to the specified
-length and formatting requirements are subject to be rejected without
-review.
+A Higher recall rate with lower M will be a better system. Besides, We also add a simple method using cosine to calculate the similarity between users to recommend them similar movies. We will take it as a baseline method to see how our LDA does in terms of the collaborative filtering. And the result is as Figure below.
 
-Workshop chairs may have different rules for allowed length and
-whether supplemental material is welcome. As always, the respective
-call for papers is the authoritative source.
+\begin{figure}[h]
+\includegraphics[scale=0.8]{cf_model_com.png}
+\centering
+\end{figure}
+
+We can see that LDA does quite a good job and run much faster when the vocabulary is large compared with this traditional method, which needs to compute a large matrix. So LDA performs great in CF task when vocabulary is quite large compared with documents.
 
 \section*{Acknowledgments}
-
-The acknowledgments should go immediately before the references.  Do
-not number the acknowledgments section. Do not include this section
-when submitting your paper for review.
 
 % include your own bib file like this:
 %\bibliographystyle{acl}

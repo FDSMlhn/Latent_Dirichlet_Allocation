@@ -26,11 +26,16 @@ is used to do some preprocessing.
 ### experiment_food_data.csv 
 is the selected 1500 review data from the original dataset.
 
-### ml-20m 
+### ml-20m(too large, not included in archive)
 is the file for datasets of logs of movie reviews from MovieLens 
 
 ### final_movie_2000.csv
 is the selected 2000 users from rating.csv in ml-20m file
+
+#######################################################################
+## document modelling
+### topic_model_plsi.ipynb
+uses gensim python library, train the text data with pLSA model, generates topic items
 
 #######################################################################
 ## topic number selecting and document classification
