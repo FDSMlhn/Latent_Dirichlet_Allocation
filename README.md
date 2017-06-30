@@ -60,5 +60,5 @@ is the implement of classification for Summary, using SGD model, also, I've adde
 ### final_experiment.ipynb
 include all codes from parameter tuning to final model evaluation
 
-###AI_plot.R
+### AI_plot.R
 delicated plot for CF
