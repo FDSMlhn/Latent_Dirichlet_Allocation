@@ -1,6 +1,8 @@
 # Latent_Dirichlet_Allocation
-	# this file is used for the description for the realization of Latent Dirichlet Allocation and three experiments. Read before viewing the code. In the following text
-	## indicates level-two title,
+	# this file is used for the description for the realization of Latent Dirichlet Allocation and three experiments. Read before viewing the code. In the following text.
+	
+
+# ## indicates level-two title,
 # ### indicates level-three title.
 
 
